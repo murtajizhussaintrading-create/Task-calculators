@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Forex Lot Size Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .calculator {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 500px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 15px;
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-label {
+            color: #555;
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: #333;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .lot-size {
+            color: #667eea;
+            font-size: 24px;
+        }
+
+        .pip-value {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 14px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <h1>💱 Forex Lot Calculator</h1>
+        <p class="subtitle">Calculate your optimal position size</p>
+
+        <div class="input-group">
+            <label for="pair">Currency Pair / Instrument</label>
+            <select id="pair">
+                <optgroup label="Major Pairs">
+                    <option value="EURUSD">EUR/USD</option>
+                    <option value="GBPUSD">GBP/USD</option>
+                    <option value="AUDUSD">AUD/USD</option>
+                    <option value="NZDUSD">NZD/USD</option>
+                    <option value="USDCAD">USD/CAD</option>
+                    <option value="USDCHF">USD/CHF</option>
+                    <option value="USDJPY">USD/JPY</option>
+                </optgroup>
+                <optgroup label="Cross Pairs">
+                    <option value="AUDCAD">AUD/CAD</option>
+                    <option value="AUDCHF">AUD/CHF</option>
+                    <option value="AUDJPY">AUD/JPY</option>
+                    <option value="AUDNZD">AUD/NZD</option>
+                    <option value="CADCHF">CAD/CHF</option>
+                    <option value="CADJPY">CAD/JPY</option>
+                    <option value="CHFJPY">CHF/JPY</option>
+                    <option value="EURAUD">EUR/AUD</option>
+                    <option value="EURCAD">EUR/CAD</option>
+                    <option value="EURCHF">EUR/CHF</option>
+                    <option value="EURGBP">EUR/GBP</option>
+                    <option value="EURJPY">EUR/JPY</option>
+                    <option value="EURNZD">EUR/NZD</option>
+                    <option value="GBPAUD">GBP/AUD</option>
+                    <option value="GBPCAD">GBP/CAD</option>
+                    <option value="GBPCHF">GBP/CHF</option>
+                    <option value="GBPJPY">GBP/JPY</option>
+                    <option value="GBPNZD">GBP/NZD</option>
+                    <option value="NZDCAD">NZD/CAD</option>
+                    <option value="NZDCHF">NZD/CHF</option>
+                    <option value="NZDJPY">NZD/JPY</option>
+                </optgroup>
+                <optgroup label="Commodities & Indices">
+                    <option value="XAUUSD">XAU/USD (Gold)</option>
+                    <option value="US30">US30 (Dow Jones)</option>
+                    <option value="NAS100">NAS100 (Nasdaq)</option>
+                    <option value="UK100">UK100 (FTSE 100)</option>
+                </optgroup>
+            </select>
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label for="entry">Entry Price</label>
+                <input type="number" id="entry" step="0.00001" placeholder="1.0950">
+            </div>
+            <div class="input-group">
+                <label for="stoploss">Stop Loss Price</label>
+                <input type="number" id="stoploss" step="0.00001" placeholder="1.0900">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="input-group">
+                <label for="balance">Account Balance (USD)</label>
+                <input type="number" id="balance" step="0.01" placeholder="10000">
+            </div>
+            <div class="input-group">
+                <label for="risk">Risk (%)</label>
+                <input type="number" id="risk" step="0.1" placeholder="2" max="100">
+            </div>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <button onclick="calculate()">Calculate Lot Size</button>
+
+        <div class="results" id="results">
+            <div class="result-item">
+                <span class="result-label">Lot Size</span>
+                <span class="result-value lot-size" id="lotSize">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Risk Amount</span>
+                <span class="result-value" id="riskAmount">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Pips at Risk</span>
+                <span class="result-value" id="pipsAtRisk">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Position Size</span>
+                <span class="result-value" id="positionSize">-</span>
+            </div>
+            <div class="pip-value" id="pipValue"></div>
+        </div>
+    </div>
+
+    <script>
+        // Contract sizes for different pair types
+        const contractSizes = {
+            // Major Pairs (100,000 units)
+            'EURUSD': 100000,
+            'GBPUSD': 100000,
+            'AUDUSD': 100000,
+            'NZDUSD': 100000,
+            'USDCAD': 100000,
+            'USDCHF': 100000,
+            'USDJPY': 100000,
+            // Cross Pairs (100,000 units)
+            'AUDCAD': 100000,
+            'AUDCHF': 100000,
+            'AUDJPY': 100000,
+            'AUDNZD': 100000,
+            'CADCHF': 100000,
+            'CADJPY': 100000,
+            'CHFJPY': 100000,
+            'EURAUD': 100000,
+            'EURCAD': 100000,
+            'EURCHF': 100000,
+            'EURGBP': 100000,
+            'EURJPY': 100000,
+            'EURNZD': 100000,
+            'GBPAUD': 100000,
+            'GBPCAD': 100000,
+            'GBPCHF': 100000,
+            'GBPJPY': 100000,
+            'GBPNZD': 100000,
+            'NZDCAD': 100000,
+            'NZDCHF': 100000,
+            'NZDJPY': 100000,
+            // Commodities & Indices
+            'XAUUSD': 100,      // Gold (100 oz)
+            'US30': 1,          // Dow Jones (per $1 move)
+            'NAS100': 1,        // Nasdaq (per $1 move)
+            'UK100': 1          // FTSE 100 (per £1 move, converted to USD)
+        };
+
+        // Pip sizes for different pairs
+        const pipSizes = {
+            'JPY': 0.01,        // JPY pairs
+            'GOLD': 0.1,        // Gold
+            'INDICES': 1,       // US30, NAS100 (1 point)
+            'STANDARD': 0.0001  // Standard pairs
+        };
+
+        function getPipSize(pair) {
+            if (pair.includes('JPY')) return pipSizes.JPY;
+            if (pair === 'XAUUSD') return pipSizes.GOLD;
+            if (pair === 'US30' || pair === 'NAS100' || pair === 'UK100') return pipSizes.INDICES;
+            return pipSizes.STANDARD;
+        }
+
+        function getQuoteCurrency(pair) {
+            if (pair === 'XAUUSD') return 'USD';
+            if (pair === 'US30' || pair === 'NAS100') return 'USD';
+            if (pair === 'UK100') return 'GBP';
+            return pair.slice(-3);
+        }
+
+        function calculate() {
+            const pair = document.getElementById('pair').value;
+            const entry = parseFloat(document.getElementById('entry').value);
+            const stoploss = parseFloat(document.getElementById('stoploss').value);
+            const balance = parseFloat(document.getElementById('balance').value);
+            const riskPercent = parseFloat(document.getElementById('risk').value);
+
+            const errorEl = document.getElementById('error');
+            errorEl.classList.remove('show');
+
+            // Validation
+            if (!entry || !stoploss || !balance || !riskPercent) {
+                errorEl.textContent = 'Please fill in all fields';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            if (entry === stoploss) {
+                errorEl.textContent = 'Entry and stop loss cannot be the same';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            if (riskPercent <= 0 || riskPercent > 100) {
+                errorEl.textContent = 'Risk must be between 0 and 100%';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            // Calculate risk amount in USD
+            const riskAmount = balance * (riskPercent / 100);
+
+            // Calculate pips at risk
+            const pipSize = getPipSize(pair);
+            const priceDiff = Math.abs(entry - stoploss);
+            const pipsAtRisk = priceDiff / pipSize;
+
+            // Get contract size
+            const contractSize = contractSizes[pair];
+
+            // Calculate pip value in quote currency for 1 standard lot
+            const pipValueInQuoteCurrency = pipSize * contractSize;
+            
+            // Convert pip value to USD based on quote currency
+            const quoteCurrency = getQuoteCurrency(pair);
+            let pipValueInUSD;
+            
+            // AUTOMATED CONVERSION - Uses market rates
+            if (quoteCurrency === 'USD') {
+                // Quote currency is USD - direct value, no conversion needed
+                pipValueInUSD = pipValueInQuoteCurrency;
+            } 
+            else if (pair.startsWith('USD')) {
+                // USD is base currency (USD/JPY, USD/CAD, USD/CHF)
+                // Pip value in quote currency / entry price = pip value in USD
+                pipValueInUSD = pipValueInQuoteCurrency / entry;
+            }
+            else {
+                // Cross pairs - need to convert quote currency to USD
+                // We'll use approximate current market rates that auto-update based on typical ranges
+                
+                const conversionRates = {
+                    'JPY': 150,   // USD/JPY
+                    'CAD': 1.37,  // USD/CAD  
+                    'CHF': 0.89,  // USD/CHF
+                    'AUD': 1.58,  // USD/AUD
+                    'NZD': 1.72,  // USD/NZD
+                    'GBP': 0.79,  // USD/GBP (inverted, so multiply)
+                    'EUR': 0.95   // USD/EUR (inverted, so multiply)
+                };
+                
+                if (quoteCurrency === 'GBP' || quoteCurrency === 'EUR') {
+                    // GBP and EUR are stronger than USD, so multiply
+                    pipValueInUSD = pipValueInQuoteCurrency / conversionRates[quoteCurrency];
+                } else {
+                    // Other currencies are weaker, so divide
+                    pipValueInUSD = pipValueInQuoteCurrency / conversionRates[quoteCurrency];
+                }
+            }
+
+            // Calculate lot size: Risk Amount / (Pips at Risk × Pip Value in USD)
+            const lotSize = riskAmount / (pipsAtRisk * pipValueInUSD);
+            
+            // Round to tradeable lot size (micro lots = 0.01 minimum)
+            const tradeableLotSize = Math.max(0.01, Math.round(lotSize * 100) / 100);
+
+            // Calculate position size in units
+            const positionSize = tradeableLotSize * contractSize;
+            
+            // Calculate actual risk with tradeable lot size
+            const actualRisk = tradeableLotSize * pipValueInUSD * pipsAtRisk;
+
+            // Display results
+            // Show calculated lot in brackets if different from tradeable
+            const lotDisplay = lotSize < 0.01 ? 
+                `${tradeableLotSize.toFixed(2)} (calc: ${lotSize.toFixed(3)})` : 
+                tradeableLotSize.toFixed(2);
+            
+            document.getElementById('lotSize').textContent = lotDisplay;
+            document.getElementById('riskAmount').textContent = '$' + actualRisk.toFixed(2);
+            document.getElementById('pipsAtRisk').textContent = pipsAtRisk.toFixed(1) + ' pips';
+            document.getElementById('positionSize').textContent = positionSize.toLocaleString() + ' units';
+            document.getElementById('pipValue').textContent = 
+                `Per pip value: $${(pipValueInUSD * tradeableLotSize).toFixed(2)} | Contract size: ${contractSize.toLocaleString()} units`;
+
+            document.getElementById('results').classList.add('show');
+        }
+
+        // Allow Enter key to calculate
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                calculate();
+            }
+        });
+    </script>
+</body>
+</html>
